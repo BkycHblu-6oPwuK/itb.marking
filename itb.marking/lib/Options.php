@@ -14,6 +14,7 @@ final class Options
     public readonly string $oauthKey;
     /** токен полученный через лк, если oauthKey пустой, то используется этот токен */
     public readonly string $token;
+    public readonly string $defaultFiscalDriveNumber;
     public readonly bool $isTest;
     public readonly bool $logsEnable;
 
@@ -21,6 +22,7 @@ final class Options
     {
         $this->oauthKey = '';
         $this->token = '';
+        $this->defaultFiscalDriveNumber = '';
         $this->isTest = false;
         $this->logsEnable = true;
     }

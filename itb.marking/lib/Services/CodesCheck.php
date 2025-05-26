@@ -38,6 +38,9 @@ class CodesCheck extends AuthService
         if(empty($codes)) {
             throw new \RuntimeException("The codes array is empty");
         }
+        if(!$fiscalDriveNumber && $this->options->defaultFiscalDriveNumber) {
+            $fiscalDriveNumber = $this->options->defaultFiscalDriveNumber;
+        }
         try {
             $result = $this->getResultCheckCodes($this->cdnService->getCdn(), $codes, $fiscalDriveNumber);
             $this->saveInDb($result);
@@ -84,7 +87,7 @@ class CodesCheck extends AuthService
         try {
             $this->codeCheckRepository->save($result);
         } catch (\Exception $e) {
-            $this->log(fn() => $this->logger->error("error in saveInDb.", ['message' => $e->getMessage(),'result' => $result]));
+            $this->log(fn() => $this->logger->error("error in saveInDb.", ['message' => $e->getMessage(), 'result' => $result]));
             throw $e;
         }
     }
