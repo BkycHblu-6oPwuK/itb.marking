@@ -47,7 +47,6 @@ class CdnService extends AuthService
     {
         foreach ($hosts->getHosts() as $host) {
             try {
-                throw new TransborderCheckServiceUnavailableException;
                 $this->checkCdn($host);
             } catch (TransborderCheckServiceUnavailableException $e) {
                 $this->log(fn() => $this->logger->warning("Cross-border code verification service is unavailable: " . $e->getMessage()));
@@ -107,19 +106,17 @@ class CdnService extends AuthService
     private function makeHostsRequest()
     {
         $baseUrl = $this->options->isTest ? self::BASE_TEST_URL : self::BASE_URL;
-        return $this->get(new Uri("{$baseUrl}/api/v4/true-api/cdn/info"), null, $this->getHeaders());
+        return $this->get(new Uri("{$baseUrl}/api/v4/true-api/cdn/info"), null, [
+            'Content-Type' => 'application/json',
+            'X-API-KEY' => $this->getAccessToken(),
+        ]);
     }
     private function makeCheckCdnRequest(Host $host)
     {
-        return $this->get(new Uri("{$host->url}/api/v4/true-api/cdn/health/check"), null, $this->getHeaders());
-    }
-
-    private function getHeaders(): array
-    {
-        return [
+        return $this->get(new Uri("{$host->url}/api/v4/true-api/cdn/health/check"), null, [
             'Content-Type' => 'application/json',
-            'Accept' => 'application/json',
+            'Connection' => 'close',
             'X-API-KEY' => $this->getAccessToken(),
-        ];
+        ]);
     }
 }

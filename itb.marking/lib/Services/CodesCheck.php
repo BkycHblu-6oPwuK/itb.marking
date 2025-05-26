@@ -33,63 +33,76 @@ class CodesCheck extends AuthService
     /**
      * @param string[] $codes
      */
-    public function check(array $codes): CodesCheckResult
+    public function check(array $codes, ?string $fiscalDriveNumber = null): CodesCheckResult
     {
         if(empty($codes)) {
             throw new \RuntimeException("The codes array is empty");
         }
         try {
-            return $this->getResultCheckCodes($this->cdnService->getCdn(), $codes);
+            $result = $this->getResultCheckCodes($this->cdnService->getCdn(), $codes, $fiscalDriveNumber);
+            $this->saveInDb($result);
+            return $result;
         } catch (TooManyRequestsException | TransborderCheckServiceUnavailableException $e) {
-            return $this->getResultCheckCodes($this->cdnService->getCdn(true), $codes);
+            $result = $this->getResultCheckCodes($this->cdnService->getCdn(true), $codes, $fiscalDriveNumber);
+            $this->saveInDb($result);
+            return $result;
         } catch (\Exception $e) {
             $this->log(fn() => $this->logger->error("Error checking codes: " . $e->getMessage(), $codes));
             throw $e;
         }
     }
 
-    protected function getResultCheckCodes(Hosts $hosts, array $codes): CodesCheckResult
+    protected function getResultCheckCodes(Hosts $hosts, array $codes, ?string $fiscalDriveNumber = null): CodesCheckResult
     {
         if ($hosts->transborderServiceUnavailable) {
             $this->log(fn() => $this->logger->warning("Cross-border code verification service is not available.", $codes));
-            $result = CodesCheckResult::transborderUnavailable($codes);
-            $this->saveInDb($result);
-            return $result;
+            return CodesCheckResult::transborderUnavailable($codes);
         }
+        $lastException  = null;
         foreach ($hosts->getHosts() as $host) {
-            $result = $this->retryWithTokenRefresh(fn() => $this->makeRequest($host, $codes));
-            if (!empty($result['codes'])) {
-                $result = new CodesCheckResult($result);
-                $this->saveInDb($result);
-                return $result;
+            try {
+                $response = $this->retryWithTokenRefresh(fn() => $this->makeRequest($host, $codes, $fiscalDriveNumber));
+                if (!empty($response['codes'])) {
+                    return new CodesCheckResult($response);
+                }
+            } catch (\Exception $e) {
+                $this->log(fn() => $this->logger->warning("error checking code on host - {$host->url}"));
+                $lastException  = $e;
             }
+
         }
-        throw new \RuntimeException("Unable to verify codes on all hosts.");
+        throw $lastException ?? new \RuntimeException("Unable to verify codes on all hosts.");
     }
 
-    private function makeRequest(Host $host, array $codes)
+    private function makeRequest(Host $host, array $codes, ?string $fiscalDriveNumber = null)
     {
-        return $this->post(new Uri("{$host->url}/api/v4/true-api/codes/check"), $this->getData($codes), $this->getHeaders());
+        return $this->post(new Uri("{$host->url}/api/v4/true-api/codes/check"), $this->getData($codes, $fiscalDriveNumber), $this->getHeaders());
     }
 
     protected function saveInDb(CodesCheckResult $result): void
     {
-        $this->codeCheckRepository->save($result);
+        try {
+            $this->codeCheckRepository->save($result);
+        } catch (\Exception $e) {
+            $this->log(fn() => $this->logger->error("error in saveInDb.", ['message' => $e->getMessage(),'result' => $result]));
+            throw $e;
+        }
     }
 
     private function getHeaders(): array
     {
         return [
             'Content-Type' => 'application/json',
-            'Accept' => 'application/json',
             'X-API-KEY' => $this->getAccessToken(),
         ];
     }
 
-    private function getData(array $codes): mixed
+    private function getData(array $codes, ?string $fiscalDriveNumber = null): mixed
     {
-        return Json::encode([
-            'codes' => $codes,
-        ]);
+        $data['codes'] = $codes;
+        if($fiscalDriveNumber){
+            $data['fiscalDriveNumber'] = $fiscalDriveNumber;    
+        }
+        return Json::encode($data);
     }
 }

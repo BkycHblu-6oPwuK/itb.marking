@@ -11,6 +11,7 @@ use Psr\Log\LoggerInterface;
 class AuthService extends ApiService
 {
     private ?string $token = null;
+    private readonly bool $authByApi;
     private CacheSettings $cacheSettings;
     private const BASE_TEST_URL = "https://markirovka.sandbox.crptech.ru";
     private const BASE_URL = "https://markirovka.crpt.ru";
@@ -18,6 +19,10 @@ class AuthService extends ApiService
     public function __construct(?LoggerInterface $logger = null)
     {
         parent::__construct($logger);
+        $this->authByApi = $this->options->oauthKey !== '';
+        if(!$this->authByApi){
+            $this->token = $this->options->token;
+        }
         $this->cacheSettings = new CacheSettings(1800, 'marking_access_token', '/marking/token');
     }
 
@@ -54,6 +59,7 @@ class AuthService extends ApiService
 
     private function setToken(bool $isRefresh = false): void
     {
+        if(!$this->authByApi) return;
         $result = [];
 
         if ($isRefresh) {
@@ -70,7 +76,7 @@ class AuthService extends ApiService
             $this->setToken(true);
             return;
         }
-        debug($result);
+
         $this->token = $result['access_token'];
     }
 

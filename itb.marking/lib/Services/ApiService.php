@@ -28,7 +28,7 @@ abstract class ApiService
         $this->client = new Client();
         $this->options = Options::getInstance();
 
-        if (!$this->options->isTest) {
+        if ($this->options->isTest) {
             $this->client->disableSslVerification();
         }
 
@@ -72,9 +72,6 @@ abstract class ApiService
                 return $this->handleResult($this->client->request($method, $uri)->getResult());
             });
 
-            if ($this->options->logsEnable) {
-                $this->logger->info($uri->getLocator() . ', status - ' . $this->client->getStatus());
-            }
             return $result;
         } catch (ClientException $e) {
             $error = $this->client->getError();
@@ -86,14 +83,10 @@ abstract class ApiService
                 ];
             }
             $error['status'] = $this->client->getStatus();
-            if ($this->options->logsEnable) {
-                $this->logger->error($e->getMessage(), $error);
-            }
+            $this->log(fn() => $this->logger->error($e->getMessage(), $error));
             throw $e;
         } catch (\Throwable $e) {
-            if ($this->options->logsEnable) {
-                $this->logger->error($e->getMessage());
-            }
+            $this->log(fn() => $this->logger->error($e->getMessage()));
             throw $e;
         }
     }
@@ -111,7 +104,7 @@ abstract class ApiService
                     if (empty($result)) {
                         throw new \RuntimeException('Error getting data when requesting API');
                     }
-                    if($cacheSettings->abortCache) {
+                    if ($cacheSettings->abortCache) {
                         $cacheSettings->abortCache = false;
                         $this->cache->abortDataCache();
                         return $result;

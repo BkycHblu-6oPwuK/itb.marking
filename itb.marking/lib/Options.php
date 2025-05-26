@@ -12,14 +12,16 @@ final class Options
      * любой документ подписанный с помощью УКЭП в base64
      */
     public readonly string $oauthKey;
+    /** токен полученный через лк, если oauthKey пустой, то используется этот токен */
+    public readonly string $token;
     public readonly bool $isTest;
     public readonly bool $logsEnable;
 
     private function __construct()
     {
-        //$options = \Bitrix\Main\Config\Option::getForModule(self::MODULE_ID);
-        $this->oauthKey = 'key';
-        $this->isTest = true;
+        $this->oauthKey = '';
+        $this->token = '';
+        $this->isTest = false;
         $this->logsEnable = true;
     }
 
