@@ -49,6 +49,10 @@ class AuthService extends ApiService
 
     protected function retryWithTokenRefresh(callable $callback)
     {
+        if (!$this->authByApi) {
+            return $callback();
+        }
+
         try {
             return $callback();
         } catch (ClientUnathorizedException) {

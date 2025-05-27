@@ -6,6 +6,7 @@ use Bitrix\Main\Web\Uri;
 use Itb\Marking\Entity\CacheSettings;
 use Itb\Marking\Entity\Cdn\Host;
 use Itb\Marking\Entity\Cdn\Hosts;
+use Itb\Marking\Exceptions\CdnTemporarilyUnavailableException;
 use Itb\Marking\Exceptions\TooManyRequestsException;
 use Itb\Marking\Exceptions\TransborderCheckServiceUnavailableException;
 use Psr\Log\LoggerInterface;
@@ -52,6 +53,9 @@ class CdnService extends AuthService
                 $this->log(fn() => $this->logger->warning("Cross-border code verification service is unavailable: " . $e->getMessage()));
                 $hosts->transborderServiceUnavailable = true;
                 break;
+            } catch (TooManyRequestsException | CdnTemporarilyUnavailableException $e) {
+                $this->log(fn() => $this->logger->warning("Host {$host->url} is blocked: " . $e->getMessage()));
+                $host->setBlocked();
             } catch (\Throwable $e) {
                 $this->log(fn() => $this->logger->warning("Host problem {$host->url}: " . $e->getMessage()));
             }
@@ -73,8 +77,8 @@ class CdnService extends AuthService
     {
         try {
             $this->attemptCheckCdn($host);
-        } catch (TooManyRequestsException | TransborderCheckServiceUnavailableException $e) {
-            $this->retryCheckCdn($host, $e);
+        } catch (TooManyRequestsException | CdnTemporarilyUnavailableException | TransborderCheckServiceUnavailableException) {
+            $this->attemptCheckCdn($host);
         }
     }
 
@@ -85,22 +89,6 @@ class CdnService extends AuthService
             throw new \RuntimeException("attemptCheckCdn error");
         }
         $host->avg = (int)$result['avgTimeMs'];
-    }
-
-    private function retryCheckCdn(Host $host, \Throwable $originalException): void
-    {
-        try {
-            $result = $this->makeCheckCdnRequest($host);
-            if (!isset($result['avgTimeMs'])) {
-                throw new \RuntimeException("retryCheckCdn error");
-            }
-            $host->avg = (int)$result['avgTimeMs'];
-        } catch (\Throwable) {
-            if ($originalException instanceof TooManyRequestsException) {
-                $host->setBlocked();
-            }
-            $this->log(fn() => $this->logger->warning("Проблема с хостом {$host->url}: " . $originalException->getMessage()));
-        }
     }
 
     private function makeHostsRequest()
