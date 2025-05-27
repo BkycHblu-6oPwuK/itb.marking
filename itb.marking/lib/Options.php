@@ -8,9 +8,9 @@ final class Options
 
     private static $instance;
 
-    /**
-     * любой документ подписанный с помощью УКЭП в base64
-     */
+    /** url для авторизации и получения cdn */
+    public readonly string $baseUrl;
+    /** любой документ подписанный с помощью УКЭП в base64 */
     public readonly string $oauthKey;
     /** токен полученный через лк, если oauthKey пустой, то используется этот токен */
     public readonly string $token;
@@ -25,11 +25,12 @@ final class Options
         $this->defaultFiscalDriveNumber = '';
         $this->isTest = false;
         $this->logsEnable = true;
+        $this->baseUrl = $this->isTest ? 'https://markirovka.sandbox.crptech.ru' : 'https://cdn.crpt.ru';
     }
 
     public static function getInstance()
     {
-        if(self::$instance === null){
+        if (self::$instance === null) {
             self::$instance = new self;
         }
         return self::$instance;

@@ -14,8 +14,6 @@ use Psr\Log\LoggerInterface;
 class CdnService extends AuthService
 {
     private CacheSettings $cacheSettings;
-    private const BASE_TEST_URL = "https://markirovka.sandbox.crptech.ru";
-    private const BASE_URL = "https://cdn.crpt.ru";
 
     public function __construct(?LoggerInterface $logger = null)
     {
@@ -93,8 +91,7 @@ class CdnService extends AuthService
 
     private function makeHostsRequest()
     {
-        $baseUrl = $this->options->isTest ? self::BASE_TEST_URL : self::BASE_URL;
-        return $this->get(new Uri("{$baseUrl}/api/v4/true-api/cdn/info"), null, [
+        return $this->get(new Uri("{$this->options->baseUrl}/api/v4/true-api/cdn/info"), null, [
             'Content-Type' => 'application/json',
             'X-API-KEY' => $this->getAccessToken(),
         ]);

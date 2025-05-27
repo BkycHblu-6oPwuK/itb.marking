@@ -13,8 +13,6 @@ class AuthService extends ApiService
     private ?string $token = null;
     private readonly bool $authByApi;
     private CacheSettings $cacheSettings;
-    private const BASE_TEST_URL = "https://markirovka.sandbox.crptech.ru";
-    private const BASE_URL = "https://markirovka.crpt.ru";
 
     public function __construct(?LoggerInterface $logger = null)
     {
@@ -86,8 +84,7 @@ class AuthService extends ApiService
 
     private function makeRequest()
     {
-        $baseUrl = $this->options->isTest ? self::BASE_TEST_URL : self::BASE_URL;
-        return $this->post(new Uri("{$baseUrl}/api/v3/true-api/auth/permissive-access"), $this->getData(), $this->getHeaders(), $this->cacheSettings);
+        return $this->post(new Uri("{$this->options->baseUrl}/api/v3/true-api/auth/permissive-access"), $this->getData(), $this->getHeaders(), $this->cacheSettings);
     }
 
     private function getHeaders(): array
