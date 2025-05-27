@@ -16,6 +16,8 @@ readonly class Code
     public array $groupIds;
     /** Результат проверки криптоподписи КМ */
     public bool $verified;
+    /** Сообщение об ошибке */
+    public string $message;
     /** Признак наличия кода */
     public bool $found;
     /** Признак ввода в оборот */
@@ -24,6 +26,8 @@ readonly class Code
     public bool $utilised;
     /** Признак того, что розничная продажа продукции заблокирована по решению ОГВ */
     public bool $isBlocked;
+    /** Признак, определяющий что запрос направлен владельцем кода (определяется по аутентификационному токену) */
+    public bool $isOwner;
     /** Дата и время истечения срока годности */
     public ?\DateTimeImmutable $expireDate;
     /** Дата производства продукции */
@@ -53,10 +57,12 @@ readonly class Code
         $this->gtin = $item['gtin'] ?? '';
         $this->groupIds = $item['groupIds'] ?? [];
         $this->verified = $item['verified'] ?? false;
+        $this->message = $item['message'] ?? '';
         $this->found = $item['found'] ?? false;
         $this->realizable = $item['realizable'] ?? false;
         $this->utilised = $item['utilised'] ?? false;
         $this->isBlocked = $item['isBlocked'] ?? false;
+        $this->isOwner = $item['isOwner'] ?? false;
         $this->expireDate = isset($item['expireDate']) ? new \DateTimeImmutable($item['expireDate']) : null;
         $this->productionDate = isset($item['productionDate']) ? new \DateTimeImmutable($item['productionDate']) : null;
         $this->errorCode = $item['errorCode'] ?? 0;
@@ -83,10 +89,12 @@ readonly class Code
             'gtin' => $this->gtin,
             'groupIds' => $this->groupIds,
             'verified' => $this->verified,
+            'message' => $this->message,
             'found' => $this->found,
             'realizable' => $this->realizable,
             'utilised' => $this->utilised,
             'isBlocked' => $this->isBlocked,
+            'isOwner' => $this->isOwner,
             'expireDate' => $this->expireDate?->format(DATE_ATOM),
             'productionDate' => $this->productionDate?->format(DATE_ATOM),
             'errorCode' => $this->errorCode,

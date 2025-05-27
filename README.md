@@ -36,7 +36,7 @@ try {
 - public readonly bool $transborderServiceUnavailable - доступность сервиса трансграничной проверки кодов
 
 Объект ```\Itb\Marking\Entity\Codes\Code```:
-- public readonly bool $valid - Результат проверки валидности структуры КМ
+- public readonly bool $verified - Результат проверки валидности структуры КМ
 - И другие поля - подробнее в самом классе
 
 Получение результата проверки из БД:
@@ -44,14 +44,14 @@ try {
 $codes = ["mark_code1", "mark_code2"];
 /** @var null|CodesCheckResult[] сгруппированы по id запросов для каждого кода*/
 $checkResult = (new \Itb\Marking\CodeCheckRepository)->findByCisList($codes);
-$isValid = $checkResult?->get("mark_code1")?->valid
+$isValid = $checkResult?->get("mark_code1")?->verified
 ```
 
-Или через метод ```findByCis``` если не уверены что массив точно совпадает.
+Или через метод ```findByCis```
 ```php
 /** @var null|\Itb\Marking\Entity\Codes\CodesCheckResult */
 $checkResult = (new \Itb\Marking\CodeCheckRepository)->findByCis("mark_code1");
-$isValid = $checkResult?->get("mark_code1")?->valid
+$isValid = $checkResult?->get("mark_code1")?->verified
 ```
 
 Далее при печате чека, на примере атол, добавить результат проверки в запрос. Валидация либо при обмене и результат берется из БД, либо в этом же классе.
@@ -116,7 +116,7 @@ class CashboxAtolFarm extends CashboxAtolFarmV5
 
         $code = $checkResult->get($cis);
 
-        if (!$code || !$code->valid) {
+        if (!$code || !$code->verified) {
             throw new Exception("not valid code - {$cis}");
         }
 
