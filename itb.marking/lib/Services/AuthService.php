@@ -4,7 +4,7 @@ namespace Itb\Marking\Services;
 
 use Bitrix\Main\Web\Json;
 use Bitrix\Main\Web\Uri;
-use Itb\Marking\Entity\CacheSettings;
+use Itb\Core\Entity\CacheSettings;
 use Itb\Marking\Exceptions\ClientUnathorizedException;
 use Psr\Log\LoggerInterface;
 

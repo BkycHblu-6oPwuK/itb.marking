@@ -2,23 +2,23 @@
 
 namespace Itb\Marking\Services;
 
-use Bitrix\Main\Data\Cache;
 use Bitrix\Main\Web\Json;
 use Bitrix\Main\Web\Uri;
-use Itb\Marking\Entity\CacheSettings;
+use Itb\Core\Entity\CacheSettings;
 use Itb\Marking\Client;
 use Itb\Marking\Enum\Method;
 use Itb\Marking\Exceptions\ClientException;
 use Itb\Marking\Logger;
 use Itb\Marking\Options;
 use Psr\Log\LoggerInterface;
+use Itb\Core\Traits\Cacheable;
 
 abstract class ApiService
 {
+    use Cacheable;
     protected readonly Client $client;
     protected readonly Options $options;
     protected readonly LoggerInterface $logger;
-    protected readonly Cache $cache;
 
     /**
      * @param null|array $options для http клиента bitrix
@@ -36,7 +36,6 @@ abstract class ApiService
             $logger = new Logger;
         }
         $this->logger = $logger;
-        $this->cache = Cache::createInstance();
     }
 
     /**
@@ -87,40 +86,6 @@ abstract class ApiService
             throw $e;
         } catch (\Throwable $e) {
             $this->log(fn() => $this->logger->error($e->getMessage()));
-            throw $e;
-        }
-    }
-
-    protected function getCached(CacheSettings $cacheSettings, callable $callback)
-    {
-        try {
-            $cacheSettings->fromCache = false;
-            if ($cacheSettings->time > 0) {
-                if ($this->cache->initCache($cacheSettings->time, $cacheSettings->key, $cacheSettings->dir)) {
-                    $cacheSettings->fromCache = true;
-                    return $this->cache->getVars();
-                } elseif ($this->cache->startDataCache()) {
-                    $result = $callback();
-                    if (empty($result)) {
-                        throw new \RuntimeException('Error getting data when requesting API');
-                    }
-                    if ($cacheSettings->abortCache) {
-                        $cacheSettings->abortCache = false;
-                        $this->cache->abortDataCache();
-                        return $result;
-                    }
-                    $this->cache->endDataCache($result);
-
-                    return $result;
-                }
-            }
-            $result = $callback();
-            if (empty($result)) {
-                throw new \RuntimeException('Error getting data when requesting API');
-            }
-            return $result;
-        } catch (\Exception $e) {
-            $this->cache->abortDataCache();
             throw $e;
         }
     }

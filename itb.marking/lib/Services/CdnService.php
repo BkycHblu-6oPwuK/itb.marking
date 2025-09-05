@@ -3,7 +3,7 @@
 namespace Itb\Marking\Services;
 
 use Bitrix\Main\Web\Uri;
-use Itb\Marking\Entity\CacheSettings;
+use Itb\Core\Entity\CacheSettings;
 use Itb\Marking\Entity\Cdn\Host;
 use Itb\Marking\Entity\Cdn\Hosts;
 use Itb\Marking\Exceptions\CdnTemporarilyUnavailableException;
