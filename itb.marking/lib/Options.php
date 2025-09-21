@@ -2,12 +2,10 @@
 
 namespace Itb\Marking;
 
-final class Options
+use Itb\Core\Modules\Options\AbstractOptions;
+
+final class Options extends AbstractOptions
 {
-    const MODULE_ID = 'itb.marking';
-
-    private static $instance;
-
     /** url для авторизации и получения cdn */
     public readonly string $baseUrl;
     /** любой документ подписанный с помощью УКЭП в base64 */
@@ -18,21 +16,21 @@ final class Options
     public readonly bool $isTest;
     public readonly bool $logsEnable;
 
-    private function __construct()
+    protected function mapOptions(array $options): void
     {
-        $this->oauthKey = '';
-        $this->token = '';
-        $this->defaultFiscalDriveNumber = '';
-        $this->isTest = false;
-        $this->logsEnable = true;
-        $this->baseUrl = $this->isTest ? 'https://markirovka.sandbox.crptech.ru' : 'https://cdn.crpt.ru';
+        $this->oauthKey = $options['oauth_key'] ?? '';
+        $this->token = $options['token'] ?? '';
+        $this->defaultFiscalDriveNumber = $options['default_fdn'] ?? '';
+        $this->isTest = ($options['is_test'] ?? 'N') === 'Y';
+        $this->logsEnable = ($options['logs_enable'] ?? 'Y') === 'Y';
+
+        $this->baseUrl = $this->isTest
+            ? 'https://markirovka.sandbox.crptech.ru'
+            : 'https://cdn.crpt.ru';
     }
 
-    public static function getInstance()
+    public function getModuleId(): string
     {
-        if (self::$instance === null) {
-            self::$instance = new self;
-        }
-        return self::$instance;
+        return 'itb.marking';
     }
 }
