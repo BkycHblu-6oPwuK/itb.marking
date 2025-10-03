@@ -7,6 +7,16 @@
 
 # Установка
 
+добавьте в composer.json экстра опцию, чтобы композер поставил пакет в local/modules
+
+```json
+"extra": {
+  "installer-paths": {
+    "local/modules/{$name}/": ["type:bitrix-module"]
+  }
+}
+```
+
 1. Установить модуль itb.core
 2. Установить этот модуль
 3. Получить документ подписанный УКЭП
