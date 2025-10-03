@@ -4,7 +4,7 @@ namespace Itb\Marking\Services;
 
 use Bitrix\Main\Web\Json;
 use Bitrix\Main\Web\Uri;
-use Itb\Core\Entity\CacheSettings;
+use Itb\Core\Dto\CacheSettingsDto;
 use Itb\Marking\Client;
 use Itb\Marking\Enum\Method;
 use Itb\Marking\Exceptions\ClientException;
@@ -43,7 +43,7 @@ abstract class ApiService
      * @param null|array $data ключ-значение
      * @param null|array $headers ключ-значение
      */
-    protected function get(Uri $uri, ?array $data = null, ?array $headers = null, ?CacheSettings $cacheSettings = null): array
+    protected function get(Uri $uri, ?array $data = null, ?array $headers = null, ?CacheSettingsDto $cacheSettings = null): array
     {
         if ($data) $uri->addParams($data);
         if ($headers) $this->client->setHeaders($headers);
@@ -55,17 +55,17 @@ abstract class ApiService
      * @param mixed $data
      * @param null|array $headers ключ-значение
      */
-    protected function post(Uri $uri, mixed $data = null, ?array $headers = null, ?CacheSettings $cacheSettings = null): array
+    protected function post(Uri $uri, mixed $data = null, ?array $headers = null, ?CacheSettingsDto $cacheSettings = null): array
     {
         $this->client->setPostData($data);
         if ($headers) $this->client->setHeaders($headers);
         return $this->request(Method::POST, $uri, $cacheSettings);
     }
 
-    private function request(Method $method, Uri $uri, ?CacheSettings $cacheSettings = null): array
+    private function request(Method $method, Uri $uri, ?CacheSettingsDto $cacheSettings = null): array
     {
         try {
-            $cacheSettings ??= new CacheSettings;
+            $cacheSettings ??= new CacheSettingsDto;
 
             $result = $this->getCached($cacheSettings, function () use ($method, $uri) {
                 return $this->handleResult($this->client->request($method, $uri)->getResult());

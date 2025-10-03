@@ -1,0 +1,14 @@
+{
+    "name": "beeralex/itb.marking",
+    "description": "My marking module",
+    "type": "bitrix-module",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alexandr Belotsitsko",
+            "email": "sanyabelyy020@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

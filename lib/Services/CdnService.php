@@ -3,7 +3,7 @@
 namespace Itb\Marking\Services;
 
 use Bitrix\Main\Web\Uri;
-use Itb\Core\Entity\CacheSettings;
+use Itb\Core\Dto\CacheSettingsDto;
 use Itb\Marking\Entity\Cdn\Host;
 use Itb\Marking\Entity\Cdn\Hosts;
 use Itb\Marking\Exceptions\CdnTemporarilyUnavailableException;
@@ -13,12 +13,12 @@ use Psr\Log\LoggerInterface;
 
 class CdnService extends AuthService
 {
-    private CacheSettings $cacheSettings;
+    private CacheSettingsDto $cacheSettings;
 
     public function __construct(?LoggerInterface $logger = null)
     {
         parent::__construct($logger);
-        $this->cacheSettings = new CacheSettings(3600 * 6, 'marking_cdn', '/marking/cdn');
+        $this->cacheSettings = new CacheSettingsDto(3600 * 6, 'marking_cdn', '/marking/cdn');
     }
 
     public function getCdn(bool $isRefresh = false): Hosts

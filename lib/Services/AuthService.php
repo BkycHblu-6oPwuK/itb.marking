@@ -4,7 +4,7 @@ namespace Itb\Marking\Services;
 
 use Bitrix\Main\Web\Json;
 use Bitrix\Main\Web\Uri;
-use Itb\Core\Entity\CacheSettings;
+use Itb\Core\Dto\CacheSettingsDto;
 use Itb\Marking\Exceptions\ClientUnathorizedException;
 use Psr\Log\LoggerInterface;
 
@@ -12,7 +12,7 @@ class AuthService extends ApiService
 {
     private ?string $token = null;
     private readonly bool $authByApi;
-    private CacheSettings $cacheSettings;
+    private CacheSettingsDto $cacheSettings;
 
     public function __construct(?LoggerInterface $logger = null)
     {
@@ -21,7 +21,7 @@ class AuthService extends ApiService
         if(!$this->authByApi){
             $this->token = $this->options->token;
         }
-        $this->cacheSettings = new CacheSettings(1800, 'marking_access_token', '/marking/token');
+        $this->cacheSettings = new CacheSettingsDto(1800, 'marking_access_token', '/marking/token');
     }
 
     /** 

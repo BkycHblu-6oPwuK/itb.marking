@@ -5,14 +5,17 @@ namespace Itb\Marking;
 use Bitrix\Main\Entity\StringField;
 use Bitrix\Main\Entity\TextField;
 use Bitrix\Main\Entity\DatetimeField;
+use Bitrix\Main\ORM\Data\DataManager;
 use Bitrix\Main\ORM\Fields\IntegerField;
 use Bitrix\Main\ORM\Fields\Relations\Reference;
 use Bitrix\Main\ORM\Query\Join;
 use Bitrix\Main\Type\DateTime;
-use Itb\Core\BaseTable;
+use Itb\Core\Traits\TableManagerTrait;
 
-class CodeCheckTable extends BaseTable
+class CodeCheckTable extends DataManager
 {
+    use TableManagerTrait;
+
     public static function getTableName(): string
     {
         return 'itb_api_code_check_result';
